@@ -1,6 +1,6 @@
 ---
 title: "Lab 2"
-subtitle: "Julia Data Handling and Plotting"
+subtitle: "Julia Data Handling with AI Assistance"
 author: CEVE 543 Fall 2025
 date: "2025-09-05"
 
@@ -32,4 +32,10 @@ code-overflow: wrap
 code-line-numbers: false
 code-block-font-size: "0.85em"
 ---
+
+## Topics
+
+- DataFrames.jl & CairoMakie.jl with AI coding tutorial
+- Texas precipitation datasets
+- AI-assisted data quality assessment
 
