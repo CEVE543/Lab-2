@@ -1,8 +1,17 @@
 ---
-title: "Lab 2"
-subtitle: "Julia Data Handling with AI Assistance"
+title: "Lab 2: Julia Data Handling"
+subtitle: "DataFrames.jl, Plotting with CairoMakie, TX precipitation datasets, Basic exploratory data analysis"
 author: CEVE 543 Fall 2025
 date: "2025-09-05"
+type: "lab"
+module: 1
+week: 2
+topics: ["DataFrames", "Plotting", "Precipitation data", "EDA"]
+objectives:
+  - "Master DataFrames.jl for data manipulation and analysis"
+  - "Create publication-quality plots with CairoMakie.jl"
+  - "Perform exploratory data analysis on Texas precipitation datasets"
+ps_connection: "Builds data loading, manipulation, and visualization toolkit for PS1 Tasks 1-3"
 
 engine: julia
 
@@ -12,7 +21,7 @@ format:
     toc-depth: 2
     code-block-bg: "#f8f8f8"
     code-block-border-left: "#e1e4e5"
-    theme: default
+    theme: cosmo
     number-sections: true
     fig-format: svg
   typst:
@@ -35,7 +44,8 @@ code-block-font-size: "0.85em"
 
 ## Topics
 
-- DataFrames.jl & CairoMakie.jl with AI coding tutorial
-- Texas precipitation datasets
-- AI-assisted data quality assessment
+- DataFrames.jl for data manipulation
+- Plotting with CairoMakie.jl
+- TX precipitation datasets
+- Basic exploratory data analysis
 
