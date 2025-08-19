@@ -6,11 +6,12 @@ date: "2025-09-05"
 type: "lab"
 module: 1
 week: 2
-topics: ["DataFrames", "Plotting", "Precipitation data", "EDA"]
+topics: ["DataFrames", "Plotting", "Precipitation data", "EDA", "AI-assisted coding"]
 objectives:
   - "Master DataFrames.jl for data manipulation and analysis"
   - "Create publication-quality plots with CairoMakie.jl"
   - "Perform exploratory data analysis on Texas precipitation datasets"
+  - "Use AI copilot effectively for plotting syntax and code assistance"
 ps_connection: "Builds data loading, manipulation, and visualization toolkit for PS1 Tasks 1-3"
 
 engine: julia
@@ -48,4 +49,23 @@ code-block-font-size: "0.85em"
 - Plotting with CairoMakie.jl
 - TX precipitation datasets
 - Basic exploratory data analysis
+- AI-assisted coding with GitHub Copilot
+
+## AI-Assisted Coding Introduction
+
+This lab introduces practical use of AI coding assistants like GitHub Copilot for plotting and data manipulation tasks.
+Focus areas include getting syntax help for CairoMakie.jl plotting commands and DataFrame operations where syntax can be complex and hard to remember.
+
+**Best Practices:**
+
+- Use AI assistance for syntax and documentation lookup rather than conceptual understanding
+- Verify AI-generated code makes sense before running it
+- Particularly useful for CairoMakie plotting syntax which has many options and parameters
+- AI excels at translating "I want a scatter plot with these axes" into correct syntax
+
+**What to Avoid:**
+
+- Don't use AI to write entire analysis workflows without understanding the steps
+- Always understand the data manipulation logic even if AI helps with syntax
+- Plotting concepts (choosing appropriate visualizations) should be your decisions, not AI's
 
