@@ -43,15 +43,22 @@ code-line-numbers: false
 code-block-font-size: "0.85em"
 ---
 
-## Topics
+## Objectives
 
-- DataFrames.jl for data manipulation
-- Plotting with CairoMakie.jl
-- TX precipitation datasets
-- Basic exploratory data analysis
-- AI-assisted coding with GitHub Copilot
+1. Master DataFrames.jl for data manipulation and analysis
+1. Create publication-quality plots with CairoMakie.jl
+1. Perform exploratory data analysis on Texas precipitation datasets
+1. Use AI copilot effectively for plotting syntax and code assistance
 
-## AI-Assisted Coding Introduction
+## Before
+
+::: {.callout-important}
+## Instructions
+
+Do this before the lab date so that lab itself can go more smoothly.
+:::
+
+## Background and Reading
 
 This lab introduces practical use of AI coding assistants like GitHub Copilot for plotting and data manipulation tasks.
 Focus areas include getting syntax help for CairoMakie.jl plotting commands and DataFrame operations where syntax can be complex and hard to remember.
@@ -68,4 +75,15 @@ Focus areas include getting syntax help for CairoMakie.jl plotting commands and 
 - Don't use AI to write entire analysis workflows without understanding the steps
 - Always understand the data manipulation logic even if AI helps with syntax
 - Plotting concepts (choosing appropriate visualizations) should be your decisions, not AI's
+
+## Tasks
+
+Modify the code section below to address the following tasks.
+
+1. Load and explore Texas precipitation dataset using DataFrames.jl
+1. Create visualizations using CairoMakie.jl with AI assistance for syntax
+1. Perform basic exploratory data analysis and summary statistics
+1. Practice AI-assisted coding workflow for data manipulation tasks
+
+## Code
 
