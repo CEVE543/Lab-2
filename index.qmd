@@ -121,7 +121,7 @@ ENV["DATAFRAMES_ROWS"] = 5 # <8>
 2. Load DataFrames for working with tabular data (like Excel spreadsheets in code)
 3. Load Dates to properly parse and handle time information in weather data
 4. Load Downloads to fetch files from NOAA's web servers
-5. Load TidierData for modern data manipulation with pipeline syntax (@chain, @filter, @select)
+5. Load TidierData for modern data manipulation with pipeline syntax (`@chain`, `@filter`, `@select`)
 6. Load TidierFiles for simplified file reading and writing operations
 7. Load Unitful to handle units of measurement (inches, kilometers, degrees) properly
 8. Set the maximum number of rows to display in DataFrames by default
