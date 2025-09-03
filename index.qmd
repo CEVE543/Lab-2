@@ -20,7 +20,7 @@ code-annotations: hover
 format:
   html:
     toc: true
-    toc-depth: 2
+    toc-depth: 3
     code-block-bg: "#f8f8f8"
     code-block-border-left: "#e1e4e5"
     theme: simplex
@@ -99,7 +99,7 @@ You aren't expected to start working on the problem set yet, but you should get 
 
 ## Code
 
-### Step 1: Loading Required Packages
+### Loading Required Packages
 
 First, we need to load all the Julia packages we'll use in this analysis:
 
@@ -109,10 +109,11 @@ First, we need to load all the Julia packages we'll use in this analysis:
 using CSV               # <1>
 using DataFrames        # <2>
 using Dates             # <3>
-using Downloads         # <4>
-using TidierData        # <5>
-using TidierFiles       # <6>
-using Unitful           # <7>
+using Distributions     # <4>
+using Downloads         # <5>
+using TidierData        # <6>
+using TidierFiles       # <7>
+using Unitful           # <8>
 
 ENV["DATAFRAMES_ROWS"] = 5 # <8>
 ```
@@ -138,7 +139,7 @@ using GeoMakie          # <4>
 using Makie.Unitful     # <5>
 
 # Configure plotting backend - CairoMakie for high-quality static plots
-CairoMakie.activate!()  # <6>
+CairoMakie.activate!(type = "svg")  # <6>
 # If you want interactive plots, uncomment the line below instead:
 # GLMakie.activate!()  # <7>
 
@@ -165,7 +166,7 @@ include("util.jl")      # <1>
 
 1. Load our custom parsing functions from util.jl (keeps the main notebook clean)
 
-### Step 2: Downloading Weather Data
+### Downloading Weather Data
 
 Next, we'll download precipitation data from the National Weather Service:
 
@@ -174,7 +175,7 @@ fname = "dur01d_ams_na14v11.txt"   # <1>
 url = "https://hdsc.nws.noaa.gov/pub/hdsc/data/tx/dur01d_ams_na14v11.txt"  # <2>
 
 if !isfile(fname)        # <3>
-    Downloads.download(url, fname)  # <4>
+	Downloads.download(url, fname)  # <4>
 end
 ```
 
@@ -185,7 +186,7 @@ end
 
 This prevents re-downloading the file every time we run the code, which is faster and more polite to NOAA's servers.
 
-### Step 3: Parsing the Weather Data
+### Parsing the Weather Data
 
 Now we'll use our custom function to parse the downloaded data into a useful format:
 
@@ -205,7 +206,7 @@ The `read_noaa_data` function separates the messy text file into:
 - `stations`: A DataFrame with each station's location, name, and metadata
 - `rainfall_data`: A DataFrame with all rainfall measurements, using `stnid` to link to stations
 
-### Step 4: Modern Data Manipulation with TidierData.jl
+### Modern Data Manipulation with TidierData.jl
 
 Now let's explore our data using TidierData.jl, which provides a modern, readable syntax for data manipulation. TidierData brings tidyverse-style operations to Julia with intuitive verb names and pipeline workflows.
 
@@ -217,7 +218,7 @@ Let's start with some basic data exploration using TidierData syntax:
 
 ```{julia}
 @chain stations begin  # <1>
-    @select(stnid, noaa_id, name, state, latitude, longitude, years_of_data)  # <2>
+	@select(stnid, noaa_id, name, state, latitude, longitude, years_of_data)  # <2>
 end
 ```
 
@@ -229,7 +230,7 @@ This makes unit conversions automatic and error-free. For example, to convert to
 
 ```{julia}
 @chain rainfall_data begin
-    @mutate(rainfall = uconvert(u"cm", rainfall))  # <1>
+	@mutate(rainfall = uconvert(u"cm", rainfall))  # <1>
 end
 ```
 
@@ -240,9 +241,9 @@ end
 ```{julia}
 # Find stations in Texas with lots of data
 @chain stations begin  # <1>
-    @filter(state == "TX" && years_of_data > 50)  # <2>
-    @select(noaa_id, name, years_of_data)  # <3>
-    @arrange(desc(years_of_data))  # <4>
+	@filter(state == "TX" && years_of_data > 50)  # <2>
+	@select(noaa_id, name, years_of_data)  # <3>
+	@arrange(desc(years_of_data))  # <4>
 end
 ```
 
@@ -256,15 +257,15 @@ end
 ```{julia}
 # Create categorical data quality labels
 @chain stations begin  # <1>
-    @mutate(  # <2>
-        data_category = case_when(  # <3>
-            years_of_data >= 60 => "Long-term (60+ years)",  # <4>
-            years_of_data >= 30 => "Medium-term (30-59 years)",  # <5>
-            years_of_data >= 10 => "Short-term (10-29 years)",  # <6>
-            true => "Very short (<10 years)"  # <7>
-        )
-    )
-    @select(noaa_id, name, years_of_data, data_category)  # <8>
+	@mutate(  # <2>
+		data_category = case_when(  # <3>
+			years_of_data >= 60 => "Long-term (60+ years)",  # <4>
+			years_of_data >= 30 => "Medium-term (30-59 years)",  # <5>
+			years_of_data >= 10 => "Short-term (10-29 years)",  # <6>
+			true => "Very short (<10 years)",  # <7>
+		)
+	)
+	@select(noaa_id, name, years_of_data, data_category)  # <8>
 end
 ```
 
@@ -283,11 +284,11 @@ end
 ```{julia}
 # Analyze temporal coverage of rainfall data
 obs_per_year = @chain rainfall_data begin  # <1>
-    @group_by(year) # <2>
-    @summarise(  # <3>
-        station_count = n(),  # <4>
-    )
-    @arrange(desc(station_count))  # <5>
+	@group_by(year) # <2>
+	@summarise(  # <3>
+		station_count = n(),  # <4>
+	)
+	@arrange(desc(station_count))  # <5>
 end
 ```
 
@@ -298,7 +299,7 @@ end
 5. Sort years by station count (years with most stations first)
 
 
-### Step 5: Creating a Map of Weather Stations
+### Creating a Map of Weather Stations
 
 Let's visualize all the weather stations on a map, with colors showing how many years of data each station has.
 
@@ -309,33 +310,33 @@ For complete Makie plotting documentation, visit: https://docs.makie.org/stable/
 ```{julia}
 function plot_stations()
 
-    # Create map plot colored by years of data
-    fig = Figure(size=(800, 600))
-    ga = GeoAxis(fig[1, 1]; source="+proj=latlong", dest="+proj=merc",   # <1>
-        title="Texas Atlas-14 Stations", xgridvisible=false, ygridvisible=false)
+	# Create map plot colored by years of data
+	fig = Figure(size = (800, 600))
+	ga = GeoAxis(fig[1, 1]; source = "+proj=latlong", dest = "+proj=merc",   # <1>
+		title = "Texas Atlas-14 Stations", xgridvisible = false, ygridvisible = false)
 
-    # Add US states (white with black borders)
-    states = GeoMakie.naturalearth("admin_1_states_provinces_lakes", 110)  # <2>
-    poly!(ga, states.geometry;
-        strokecolor=:black, strokewidth=1, color=:white)
+	# Add US states (white with black borders)
+	states = GeoMakie.naturalearth("admin_1_states_provinces_lakes", 110)  # <2>
+	poly!(ga, states.geometry;
+		strokecolor = :black, strokewidth = 1, color = :white)
 
-    # Create scatter plot with viridis colormap
-    scatter!(ga, stations.longitude, stations.latitude;
-        color=stations.years_of_data, colormap=:viridis, markersize=10)  # <3>
+	# Create scatter plot with viridis colormap
+	scatter!(ga, stations.longitude, stations.latitude;
+		color = stations.years_of_data, colormap = :viridis, markersize = 10)  # <3>
 
-    # Set plot bounds based on data bounds plus delta
-    delta = 0.3  # degrees of padding around the data bounds
-    min_lon, max_lon = extrema(stations.longitude)
-    min_lat, max_lat = extrema(stations.latitude)
+	# Set plot bounds based on data bounds plus delta
+	delta = 0.3  # degrees of padding around the data bounds
+	min_lon, max_lon = extrema(stations.longitude)
+	min_lat, max_lat = extrema(stations.latitude)
 
-    xlims!(ga, min_lon - delta, max_lon + delta)
-    ylims!(ga, min_lat - delta, max_lat + delta)
+	xlims!(ga, min_lon - delta, max_lon + delta)
+	ylims!(ga, min_lat - delta, max_lat + delta)
 
-    # Add colorbar
-    Colorbar(fig[1, 2], label="Years of Data", colormap=:viridis,
-        limits=(minimum(stations.years_of_data), maximum(stations.years_of_data)))
+	# Add colorbar
+	Colorbar(fig[1, 2], label = "Years of Data", colormap = :viridis,
+		limits = (minimum(stations.years_of_data), maximum(stations.years_of_data)))
 
-    return fig
+	return fig
 end
 plot_stations()
 ```
@@ -345,7 +346,7 @@ plot_stations()
 3. Plot weather stations colored by years of data using the viridis color scheme
 
 
-### Step 6: Finding Stations Near a Target Location
+### Finding Stations Near a Target Location
 
 Let's say we want to study rainfall at a particular point. We'll use Rice University in Houston as our example:
 
@@ -360,31 +361,31 @@ target_lat = 29.718952               # <3>
 3. Rice University's latitude coordinate (positive means north of equator)
 
 
-### Step 7: Calculating Distances to Weather Stations
+### Calculating Distances to Weather Stations
 
 Now we need to calculate how far each weather station is from our target location using the Haversine formula:
 
 ```{julia}
 # Haversine formula for great circle distance with units
 function calc_distance(lon1, lat1, lon2, lat2)  # <1>
-    R = 6378.0u"km"  # <2>
+	R = 6378.0u"km"  # <2>
 
-    # Convert degrees to radians
-    φ1 = deg2rad(lat1)  # <3>
-    φ2 = deg2rad(lat2)  # <4>
-    Δφ = deg2rad(lat2 - lat1)  # <5>
-    Δλ = deg2rad(lon2 - lon1)  # <6>
+	# Convert degrees to radians
+	φ1 = deg2rad(lat1)  # <3>
+	φ2 = deg2rad(lat2)  # <4>
+	Δφ = deg2rad(lat2 - lat1)  # <5>
+	Δλ = deg2rad(lon2 - lon1)  # <6>
 
-    # Haversine formula
-    a = sin(Δφ / 2)^2 + cos(φ1) * cos(φ2) * sin(Δλ / 2)^2  # <7>
-    c = 2 * atan(sqrt(a), sqrt(1 - a))  # <8>
+	# Haversine formula
+	a = sin(Δφ / 2)^2 + cos(φ1) * cos(φ2) * sin(Δλ / 2)^2  # <7>
+	c = 2 * atan(sqrt(a), sqrt(1 - a))  # <8>
 
-    return R * c  # <9>
+	return R * c  # <9>
 end
 
 stations = @chain stations begin  # <10>
-    @mutate(distance_km = calc_distance(longitude, latitude, !!target_lon, !!target_lat))  # <11>
-    @arrange(distance_km)  # <12>
+	@mutate(distance_km = calc_distance(longitude, latitude, !!target_lon, !!target_lat))  # <11>
+	@arrange(distance_km)  # <12>
 end
 stations  # <13>
 ```
@@ -405,7 +406,7 @@ stations  # <13>
 
 The Haversine formula accounts for Earth's curvature, giving much more accurate distances than simple straight-line calculations.
 
-### Step 8: Examining the Closest Weather Station
+### Examining the Closest Weather Station
 
 Let's focus on the closest weather station and look at its rainfall data:
 
@@ -413,32 +414,32 @@ Let's focus on the closest weather station and look at its rainfall data:
 closest_station = first(stations)
 closest_stnid = closest_station.stnid
 closest_rainfall = @chain rainfall_data begin
-    @filter(stnid == !!closest_stnid)  # <1>
+	@filter(stnid == !!closest_stnid)  # <1>
 end
 closest_rainfall
 ```
 
 1. Filter rainfall data using `!!` to inject the external variable into TidierData
 
-### Step 9: Plotting a Time Series
+### Plotting a Time Series
 
 Now let's create a time series plot to see how rainfall has changed over time at this station:
 
 ```{julia}
 function plot_time_series(station_row, rainfall_df)
-    # Create time series plot of rainfall data
-    fig = Figure(size=(800, 400))
-    ax = Axis(fig[1, 1],
-        ylabel="Annual Maximum Rainfall",
-        title="$(station_row.noaa_id): $(station_row.name)",  # <1>
-        dim2_conversion=rainfall_conversion)  # <2>
+	# Create time series plot of rainfall data
+	fig = Figure(size = (800, 400))
+	ax = Axis(fig[1, 1],
+		ylabel = "Annual Maximum Rainfall",
+		title = "$(station_row.noaa_id): $(station_row.name)",  # <1>
+		dim2_conversion = rainfall_conversion)  # <2>
 
-    # Plot the time series
-    lines!(ax, rainfall_df.date, rainfall_df.rainfall)  # <3>
-    scatter!(ax, rainfall_df.date, rainfall_df.rainfall,  # <4>
-        markersize=10, marker=:circle, strokewidth=2, color=:transparent)
+	# Plot the time series
+	lines!(ax, rainfall_df.date, rainfall_df.rainfall)  # <3>
+	scatter!(ax, rainfall_df.date, rainfall_df.rainfall,  # <4>
+		markersize = 10, marker = :circle, strokewidth = 2, color = :transparent)
 
-    fig
+	fig
 end
 
 plot_time_series(closest_station, closest_rainfall)
@@ -450,39 +451,39 @@ plot_time_series(closest_station, closest_rainfall)
 4. Add hollow circles with transparent fill to emphasize individual data points
 
 
-### Step 10: Comparing Multiple Nearby Stations
+### Comparing Multiple Nearby Stations
 
 This is interesting! How does this compare to other nearby stations? Let's plot several stations together:
 
 ```{julia}
 # Compare with other nearby stations
-function plot_nearby_comparison(stations_df, rainfall_data; n_stations=4)
-    fig = Figure(size=(800, 400))
-    ax = Axis(fig[1, 1],
-        ylabel="Annual Maximum Rainfall",
-        title="Comparison of $(n_stations) Nearest Stations to $(target_location)",
-        dim2_conversion=rainfall_conversion)
+function plot_nearby_comparison(stations_df, rainfall_data; n_stations = 4)
+	fig = Figure(size = (800, 400))
+	ax = Axis(fig[1, 1],
+		ylabel = "Annual Maximum Rainfall",
+		title = "Comparison of $(n_stations) Nearest Stations to $(target_location)",
+		dim2_conversion = rainfall_conversion)
 
-    colors = [get(colorschemes[:viridis], i / n_stations) for i in 0:n_stations-1]  # <1>
+	colors = [get(colorschemes[:viridis], i / n_stations) for i in 0:n_stations-1]  # <1>
 
-    for (i, station) in enumerate(eachrow(stations_df[1:n_stations, :]))  # <2>
-        station_id = station.stnid
-        rainfall = @chain rainfall_data begin
-            @filter(stnid == !!station_id)  # <3>
-        end
-        lines!(ax, rainfall.year, rainfall.rainfall,
-            color=colors[i], linewidth=2,
-            label="$(station.noaa_id)")
-        scatter!(ax, rainfall.year, rainfall.rainfall,
-            color=colors[i], markersize=10)
-    end
-    xlims!(ax, 1950, 2025)
+	for (i, station) in enumerate(eachrow(stations_df[1:n_stations, :]))  # <2>
+		station_id = station.stnid
+		rainfall = @chain rainfall_data begin
+			@filter(stnid == !!station_id)  # <3>
+		end
+		lines!(ax, rainfall.year, rainfall.rainfall,
+			color = colors[i], linewidth = 2,
+			label = "$(station.noaa_id)")
+		scatter!(ax, rainfall.year, rainfall.rainfall,
+			color = colors[i], markersize = 10)
+	end
+	xlims!(ax, 1950, 2025)
 
-    axislegend(ax, position=:lt)  # <4>
-    return fig
+	axislegend(ax, position = :lt)  # <4>
+	return fig
 end
 
-plot_nearby_comparison(stations, rainfall_data; n_stations=4)
+plot_nearby_comparison(stations, rainfall_data; n_stations = 4)
 ```
 
 1. Generate evenly-spaced colors from the viridis palette for each station
@@ -490,7 +491,117 @@ plot_nearby_comparison(stations, rainfall_data; n_stations=4)
 3. Use `!!` to inject the loop variable into the TidierData filter expression
 4. Add a legend in the top-left corner to identify different stations
 
-## Analysis Question
+### GEV Distribution and Return Period Analysis
+
+Now we'll work with a GEV distribution to create return period plots and compare with observed data using Weibull plotting positions. 
+
+**Your task**: Experiment with different GEV parameters to see how well you can match the observed data from your closest station. You'll need to systematically test each parameter to answer the questions at the end. Start with these parameters, then modify them one at a time:
+
+```{julia}
+# GEV parameters for Houston area (units: inches)
+# Try modifying these values to better fit your data!
+μ = 4.0    # Location parameter - shifts the distribution left/right
+σ = 1.3    # Scale parameter - controls spread (must be > 0)
+ξ = 0.15   # Shape parameter - controls tail behavior
+
+houston_gev = GeneralizedExtremeValue(μ, σ, ξ)  # <1>
+```
+
+1. Create GEV distribution with the specified parameters
+
+### Return Period Plot
+
+```{julia}
+# Function to calculate return levels from GEV
+function gev_return_level(gev_dist, return_period)
+	μ, σ, ξ = params(gev_dist)  # <1>
+	if abs(ξ) < 1e-6  # Gumbel case
+		return μ - σ * log(-log(1 - 1 / return_period))  # <2>
+	else
+		return μ - (σ / ξ) * (1 - (-log(1 - 1 / return_period))^(-ξ))  # <3>
+	end
+end
+
+# Create return period plot
+function plot_return_periods(gev_dist)
+	fig = Figure(size = (800, 400))
+	ax = Axis(fig[1, 1],
+		xlabel = "Return Period (years)",
+		ylabel = "Return Level (inches)",
+		title = "GEV Return Period Plot",
+		xscale = log10)  # <4>
+
+	# Plot curve and highlight standard return periods
+	T_smooth = 10 .^ range(log10(1.1), log10(250), length = 100)
+	levels_smooth = [gev_return_level(gev_dist, T) for T in T_smooth]
+	lines!(ax, T_smooth, levels_smooth, color = :blue, linewidth = 2, label = "GEV Model")
+
+	return_periods = [5, 10, 25, 50, 100, 250]  # <5>
+
+	ax.xticks = [5, 10, 25, 50, 100, 250]
+	return fig
+end
+
+plot_return_periods(houston_gev)
+```
+
+1. Extract GEV parameters from distribution object
+2. Gumbel formula when $\xi \approx 0$
+3. General GEV return level formula
+4. Log scale for x-axis
+5. Standard return periods for flood analysis
+
+### Weibull Plotting Positions - Comparing Theory vs Reality
+
+Now let's see how well your chosen GEV parameters match the actual observed data! The red dots show the empirical return periods calculated from your station's data using Weibull plotting positions.
+
+**What to look for as you experiment:**
+- Do the red dots follow the blue GEV curve? 
+- Are there systematic deviations at high or low return periods?
+- How does each parameter change affect the fit?
+
+**Systematic experimentation approach:**
+1. First, try increasing $\mu$ by 1-2 inches, then decreasing it. Note the effect.
+2. Next, try increasing $\sigma$ by 0.5, then decreasing it. Note the effect.
+3. Finally, try changing $\xi$ to 0.0 (Gumbel), then to -0.1 (light tail), then 0.3 (heavy tail). Note the effect.
+4. Find your best combination!
+
+```{julia}
+# Weibull plotting positions
+function weibull_plotting_positions(data)
+	clean_data = sort(collect(skipmissing(data)))  # <1>
+	n = length(clean_data)
+	plotting_positions = [i / (n + 1) for i in 1:n]  # <2>
+	empirical_return_periods = [1 / (1 - p) for p in plotting_positions]  # <3>
+	return clean_data, empirical_return_periods
+end
+
+# Plot empirical vs theoretical
+function plot_empirical_vs_theoretical(station_data, gev_dist, station_info)
+	# Start with the basic return period plot
+	fig = plot_return_periods(gev_dist)  # <4>
+	ax = fig.content[1]  # Get the actual Axis object
+
+	# Update title to include station info
+	ax.title = "Empirical vs Theoretical Return Periods\n$(station_info.noaa_id): $(station_info.name)"  # <5>
+
+	# Add empirical data with Weibull positions
+	emp_levels, emp_periods = weibull_plotting_positions(station_data.rainfall)
+	scatter!(ax, emp_periods, emp_levels,
+		color = :red, markersize = 10,
+		label = "Observed Data (Weibull positions)")  # <6>
+
+	axislegend(ax, position = :rb)
+
+	return fig
+end
+
+plot_empirical_vs_theoretical(closest_rainfall, houston_gev, closest_station)
+```
+
+## Analysis Questions
+
+### Temporal Trends
 
 Explore the rainfall data to find one station where there *appears* to be a positive trend in rainfall over time and one station where there *appears* to be a negative trend. We will discuss more formal ways for thinking about trends in the coming weeks.
 
@@ -506,9 +617,46 @@ Explore the rainfall data to find one station where there *appears* to be a posi
 
 
 
+### GEV Parameter Experimentation
+
+**Starting Parameters vs Final Parameters:**
+
+*Record your starting parameters and the final parameters you chose after experimentation:*
+
+- Starting: $\mu = 4.0$, $\sigma = 1.3$, $\xi = 0.15$
+- Final: $\mu = \ldots$ $\sigma = \ldots$, $\xi = \ldots$
+
+**Parameter Effects:**
+
+**What happened when you increased/decreased $\mu$ (location parameter)?**
+
+*Test values like $\mu = 2.0, 4.0, 6.0$. Describe how the entire GEV curve shifted and how this affected the fit to your red data points.*
+
+
+
+**What happened when you increased/decreased $\sigma$ (scale parameter)?**
+
+*Test values like $\sigma = 0.8, 1.3, 2.0$. Describe how the curve became steeper/flatter and how this affected the spread of return levels.*
+
+
+
+**What happened when you changed $\xi$ (shape parameter)?** 
+
+*Test $\xi = -0.1$ (light tail), $\xi = 0.0$ (Gumbel), $\xi = 0.15$, $\xi = 0.3$ (heavy tail). Focus on how the high return period end (right side) of the curve changed.*
+
+
+
+**Final Assessment:**
+
+**How well does your best-fit GEV distribution represent the closest station's data?**
+
+*Do the red dots follow your blue curve? Where are the biggest deviations?*
+
+
+
 **Additional observations:**
 
-*Optional: Add any other interesting patterns you notice in the data.*
+*Optional: Add any other interesting patterns you notice in the return period analysis.*
 
 
 

@@ -53,6 +53,7 @@ end
     parse_rainfall_data(data_lines::Vector{String}, rainfall_unit, stnid::Int)
 
 Parse rainfall data lines and return DataFrame with dates, years, rainfall, and station ID.
+Fills missing years with missing values to create complete time series.
 """
 function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit, stnid::Int)
     dates = Date[]
@@ -60,6 +61,7 @@ function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit
     rainfall = Float64[]
     stnids = Int[]
 
+    # Parse available data
     for line in data_lines
         line = strip(line)
         if !isempty(line)
@@ -79,11 +81,47 @@ function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit
         end
     end
 
+    # If no data, return empty DataFrame
+    if isempty(years)
+        return DataFrame(
+            stnid = Int[],
+            date = Date[],
+            year = Int[],
+            rainfall = typeof(1.0 * rainfall_unit)[]
+        )
+    end
+
+    # Create complete year sequence and fill missing years
+    min_year, max_year = extrema(years)
+    complete_years = collect(min_year:max_year)
+    
+    # Create vectors for complete time series
+    complete_stnids = Int[]
+    complete_dates = Date[]
+    complete_years_vec = Int[]
+    complete_rainfall = Union{Float64, Missing}[]
+    
+    for yr in complete_years
+        push!(complete_stnids, stnid)
+        push!(complete_years_vec, yr)
+        
+        # Find if this year has data
+        year_idx = findfirst(==(yr), years)
+        if year_idx !== nothing
+            push!(complete_dates, dates[year_idx])
+            push!(complete_rainfall, rainfall[year_idx])
+        else
+            # Missing year - use January 1st as placeholder date
+            push!(complete_dates, Date(yr, 1, 1))
+            push!(complete_rainfall, missing)
+        end
+    end
+
     return DataFrame(
-        stnid = stnids,
-        date = dates,
-        year = years,
-        rainfall = rainfall .* rainfall_unit
+        stnid = complete_stnids,
+        date = complete_dates,
+        year = complete_years_vec,
+        rainfall = complete_rainfall .* rainfall_unit
     )
 end
 
