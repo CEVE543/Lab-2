@@ -1,5 +1,5 @@
 ---
-title: "Lab 2: Julia Data Handling"
+title: "CEVE 543 Fall 2025 Lab 2: Julia Data Handling"
 subtitle: "DataFrames.jl, Plotting with CairoMakie, TX precipitation datasets, Basic exploratory data analysis"
 author: CEVE 543 Fall 2025
 date: "2025-09-05"
