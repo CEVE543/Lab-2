@@ -7,32 +7,44 @@ using TidierFiles
 """
 Parse station header with 6 parts: ID, NAME, STATE, LAT, LON, ELEVATION
 """
-function parse_station_parts(station_number::Int, id, name, state, lat_str, lon_str, elevation, years_of_data::Int=0)
+function parse_station_parts(
+    station_number::Int, id, name, state, lat_str, lon_str, elevation, years_of_data::Int=0
+)
     return (
-        stnid = station_number,
-        noaa_id = String(strip(id)),
-        name = String(strip(name)),
-        state = String(strip(state)),
-        latitude = parse(Float64, strip(lat_str)),
-        longitude = parse(Float64, strip(lon_str)),
-        years_of_data = years_of_data
+        stnid=station_number,
+        noaa_id=String(strip(id)),
+        name=String(strip(name)),
+        state=String(strip(state)),
+        latitude=parse(Float64, strip(lat_str)),
+        longitude=parse(Float64, strip(lon_str)),
+        years_of_data=years_of_data,
     )
 end
 
 """
 Parse station header with 7 parts: ID, NAME, CITY, STATE, LAT, LON, ELEVATION
 """
-function parse_station_parts(station_number::Int, id, name, city, state, lat_str, lon_str, elevation, years_of_data::Int=0)
+function parse_station_parts(
+    station_number::Int,
+    id,
+    name,
+    city,
+    state,
+    lat_str,
+    lon_str,
+    elevation,
+    years_of_data::Int=0,
+)
     # Combine name and city for the full name
     full_name = "$(strip(name)), $(strip(city))"
     return (
-        stnid = station_number,
-        noaa_id = String(strip(id)),
-        name = String(full_name),
-        state = String(strip(state)),
-        latitude = parse(Float64, strip(lat_str)),
-        longitude = parse(Float64, strip(lon_str)),
-        years_of_data = years_of_data
+        stnid=station_number,
+        noaa_id=String(strip(id)),
+        name=String(full_name),
+        state=String(strip(state)),
+        latitude=parse(Float64, strip(lat_str)),
+        longitude=parse(Float64, strip(lon_str)),
+        years_of_data=years_of_data,
     )
 end
 
@@ -41,10 +53,12 @@ end
 
 Parse a station header line using method overloading for different formats.
 """
-function parse_station_header(header_line::AbstractString, station_number::Int, years_of_data::Int=0)
+function parse_station_header(
+    header_line::AbstractString, station_number::Int, years_of_data::Int=0
+)
     # Split by commas and strip whitespace
     parts = [strip(p) for p in split(header_line, ",")]
-    
+
     # Use splatting with method overloading
     return parse_station_parts(station_number, parts..., years_of_data)
 end
@@ -55,7 +69,9 @@ end
 Parse rainfall data lines and return DataFrame with dates, years, rainfall, and station ID.
 Fills missing years with missing values to create complete time series.
 """
-function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit, stnid::Int)
+function parse_rainfall_data(
+    data_lines::Vector{<:AbstractString}, rainfall_unit, stnid::Int
+)
     dates = Date[]
     years = Int[]
     rainfall = Float64[]
@@ -83,28 +99,25 @@ function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit
 
     # If no data, return empty DataFrame
     if isempty(years)
-        return DataFrame(
-            stnid = Int[],
-            date = Date[],
-            year = Int[],
-            rainfall = typeof(1.0 * rainfall_unit)[]
+        return DataFrame(;
+            stnid=Int[], date=Date[], year=Int[], rainfall=typeof(1.0 * rainfall_unit)[]
         )
     end
 
     # Create complete year sequence and fill missing years
     min_year, max_year = extrema(years)
     complete_years = collect(min_year:max_year)
-    
+
     # Create vectors for complete time series
     complete_stnids = Int[]
     complete_dates = Date[]
     complete_years_vec = Int[]
-    complete_rainfall = Union{Float64, Missing}[]
-    
+    complete_rainfall = Union{Float64,Missing}[]
+
     for yr in complete_years
         push!(complete_stnids, stnid)
         push!(complete_years_vec, yr)
-        
+
         # Find if this year has data
         year_idx = findfirst(==(yr), years)
         if year_idx !== nothing
@@ -117,11 +130,11 @@ function parse_rainfall_data(data_lines::Vector{<:AbstractString}, rainfall_unit
         end
     end
 
-    return DataFrame(
-        stnid = complete_stnids,
-        date = complete_dates,
-        year = complete_years_vec,
-        rainfall = complete_rainfall .* rainfall_unit
+    return DataFrame(;
+        stnid=complete_stnids,
+        date=complete_dates,
+        year=complete_years_vec,
+        rainfall=complete_rainfall .* rainfall_unit,
     )
 end
 
@@ -160,12 +173,12 @@ function read_noaa_data(filename::String)
         if !isempty(block_lines)
             # (a) Pull out the header row into station information
             header_line = block_lines[1]
-            
+
             # (b) Parse the rainfall data with station ID
             data_lines = block_lines[2:end]
             rainfall_df = parse_rainfall_data(data_lines, rainfall_unit, i)
             years_count = nrow(rainfall_df)
-            
+
             # Create station with years_of_data
             station = parse_station_header(header_line, i, years_count)
             push!(stations, station)
@@ -175,10 +188,10 @@ function read_noaa_data(filename::String)
 
     # Convert stations vector to DataFrame
     stations_df = DataFrame(stations)
-    
+
     # Combine all rainfall data into single DataFrame
     rainfall_data_df = vcat(all_rainfall_data...)
-    
+
     return stations_df, rainfall_data_df
 end
 
